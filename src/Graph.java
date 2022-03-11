@@ -4,12 +4,16 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class Graph {
 
-  public List<String> aeroports = new ArrayList<>();
-  public List<String> vols = new ArrayList<>();
+  private HashMap<String, List<String>> aeroports = new HashMap<>();
+  private Map<String, List<String>> inital = new HashMap<>();
+  private Map<String, List<String>> f = new HashMap<>();
 
   public Graph(File aeroportsFile, File volsFile) {
     try (
@@ -19,21 +23,20 @@ public class Graph {
 
       String aeroportLine = "";
       String volLine = "";
-      while (aeroportLine != null && volLine != null) {
-
-        volLine = volsBuffer.readLine();
+      while (aeroportLine != null) {
+        aeroportLine = aeroportsBuffer.readLine();
         if (aeroportLine != null) {
-          aeroportLine = aeroportsBuffer.readLine();
-          if (aeroportLine != null) {
-            aeroports.add(aeroportLine);
-          }
-        }
+          List<String> aeroport = Arrays.stream(aeroportLine.split(",")).toList();
+          this.aeroports.put(aeroport.get(0), aeroport);
+          //aeroports.add(aeroportLine);
 
+        }
+      }
+      System.out.println(this.aeroports);
+      while (volLine != null) {
+        volLine = volsBuffer.readLine();
         if (volLine != null) {
-          volLine = volsBuffer.readLine();
-          if (volLine != null) {
-            vols.add(volLine);
-          }
+
         }
       }
     } catch (FileNotFoundException e) {
