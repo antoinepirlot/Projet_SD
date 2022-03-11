@@ -12,24 +12,26 @@ public class Graph {
   public List<String> vols = new ArrayList<>();
 
   public Graph(File aeroportsFile, File volsFile) {
-    try {
-      BufferedReader aeroportsBuffer = new BufferedReader(new FileReader(aeroportsFile));
-      BufferedReader volsBuffer = new BufferedReader(new FileReader(volsFile));
+    try (
+        BufferedReader aeroportsBuffer = new BufferedReader(new FileReader(aeroportsFile));
+        BufferedReader volsBuffer = new BufferedReader(new FileReader(volsFile))
+    ) {
+
       String aeroportLine = "";
       String volLine = "";
       while (aeroportLine != null && volLine != null) {
 
         volLine = volsBuffer.readLine();
-        if(aeroportLine != null){
+        if (aeroportLine != null) {
           aeroportLine = aeroportsBuffer.readLine();
-          if(aeroportLine != null) {
+          if (aeroportLine != null) {
             aeroports.add(aeroportLine);
           }
         }
 
-        if(volLine != null){
+        if (volLine != null) {
           volLine = volsBuffer.readLine();
-          if(volLine != null){
+          if (volLine != null) {
             vols.add(volLine);
           }
         }
