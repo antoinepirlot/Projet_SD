@@ -91,7 +91,7 @@ public class Graph {
     etiquettesDefinitives.put(a, (double)cpt);
     //etiquettesDefinitives.put(sourceA, (double) -1);
 
-
+    cpt++;
   }
 
   public void calculerItineraireMiniminantDistance(String source, String destination) {
