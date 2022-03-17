@@ -3,12 +3,14 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public class Graph {
 
@@ -20,7 +22,6 @@ public class Graph {
 
   private Map<Aeroport, Double> etiquettesProvisoires = new HashMap<Aeroport, Double>();
   private Map<Aeroport, Double> etiquettesDefinitives = new HashMap<Aeroport, Double>();
-
 
   public Graph(File aeroportsFile, File volsFile) {
     try (
@@ -66,15 +67,31 @@ public class Graph {
      Aeroport sourceA = aeroports.get(source);
      Aeroport destA = aeroports.get(destination);
 
-    etiquettesProvisoires.put(sourceA, (double) -1);
-    etiquettesDefinitives.put(sourceA, (double) -1);
+    //etiquettesProvisoires.put(sourceA, (double) -1);
 
+    Set<Aeroport> aeroportsDejaPasses = new HashSet<Aeroport>();
+    ArrayDeque<HashMap<Aeroport, Integer>> listeAeroportValeur = new ArrayDeque<HashMap<Aeroport, Integer>>(); //Aeroport, nombre_de_vol
+
+    int cpt = 1;
+    // On commence par ici
     for(Vol v : volsSortantAeroport.get(sourceA)){
-      System.out.println(v);
-      //System.out.println("s");
-      etiquettesProvisoires.put(aeroports.get(v.getIATASource()), (double) 1);
+      HashMap<Aeroport, Integer> temp = new HashMap<Aeroport, Integer>();
+      temp.put(aeroports.get(v.getIATASource()), cpt);
+      listeAeroportValeur.add(temp);
+
+      aeroportsDejaPasses.add(aeroports.get(v.getIATASource()));
     }
-    //System.out.println(etiquettesProvisoires);
+
+    HashMap<Aeroport, Integer> premierAeroport = listeAeroportValeur.poll();
+    if(premierAeroport == null) // Si queue est vide
+      return;
+    Aeroport a = premierAeroport.keySet().stream().findAny().orElse(null);
+    if(a == null) // normalement jamais le cas
+      return;
+    etiquettesDefinitives.put(a, (double)cpt);
+    //etiquettesDefinitives.put(sourceA, (double) -1);
+
+
   }
 
   public void calculerItineraireMiniminantDistance(String source, String destination) {
