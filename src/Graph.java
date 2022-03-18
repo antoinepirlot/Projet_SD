@@ -157,13 +157,13 @@ public class Graph {
       }
     }
 
+    List<Object> list = new ArrayList<>();
     System.out.println(etiquettesDefinitives.get(aeroportDestination));
     Vol vol = sourceAeroport.get(aeroportDestination);
-    while (vol != null) {
+    while (!vol.getIATASource().equals(aeroportSource.getIATA())) {
       System.out.println(vol);
       vol = sourceAeroport.get(aeroports.get(vol.getIATASource()));
     }
     System.out.println(vol);
-    System.out.println(sourceAeroport.get(aeroports.get(vol.getIATASource())));
   }
 }
