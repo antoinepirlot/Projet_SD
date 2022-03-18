@@ -3,15 +3,18 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public class Graph {
 
-  private HashMap<String, List<String>> aeroports = new HashMap<>();
+  private HashMap<String, Aeroport> aeroports = new HashMap<>(); //IATA, AEROPORT
+
+
   private Map<String, List<String>> inital = new HashMap<>();
   private Map<String, List<String>> f = new HashMap<>();
 
@@ -25,9 +28,13 @@ public class Graph {
       String volLine = "";
       while (aeroportLine != null) {
         aeroportLine = aeroportsBuffer.readLine();
+        Aeroport aeroport;
         if (aeroportLine != null) {
-          List<String> aeroport = Arrays.stream(aeroportLine.split(",")).toList();
-          this.aeroports.put(aeroport.get(0), aeroport);
+          List<String> aeroportString = Arrays.stream(aeroportLine.split(",")).toList();
+          aeroport = new Aeroport(aeroportString.get(0), aeroportString.get(1), aeroportString.get(2),
+              aeroportString.get(3),Double.parseDouble(aeroportString.get(4)),
+              Double.parseDouble(aeroportString.get(5)));
+          this.aeroports.put(aeroport.getIATA(), aeroport);
           //aeroports.add(aeroportLine);
 
         }
@@ -36,7 +43,11 @@ public class Graph {
       while (volLine != null) {
         volLine = volsBuffer.readLine();
         if (volLine != null) {
-
+          List<String> volString = Arrays.stream(volLine.split(",")).toList();
+          Aeroport aeroportSource = this.aeroports.get(volString.get(1));
+          Aeroport aeroportDestination = this.aeroports.get(volString.get(2));
+          Vol vol = new Vol(volString.get(0), aeroportSource, aeroportDestination);
+          aeroportSource.addVolSortant(vol);
         }
       }
     } catch (FileNotFoundException e) {
