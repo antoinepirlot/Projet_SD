@@ -20,7 +20,6 @@ public class Graph {
   private HashSet<Vol> vols = new HashSet<Vol>();
   private Map<Aeroport, List<Vol>> volsSortantAeroport = new HashMap<Aeroport, List<Vol>>();
 
-  private Map<Aeroport, Double> etiquettesProvisoires = new HashMap<Aeroport, Double>();
   private Map<Aeroport, Double> etiquettesDefinitives = new HashMap<Aeroport, Double>();
 
   public Graph(File aeroportsFile, File volsFile) {
@@ -46,12 +45,9 @@ public class Graph {
         vols.add(volTemp);
 
         //Ajout du vol dans volsSortantAeroports
-        if(volsSortantAeroport.containsKey(aeroports.get(volTemp.getIATASource()))){
-          volsSortantAeroport.get(aeroports.get(volTemp.getIATASource())).add(volTemp);
-        } else {
+        if(!volsSortantAeroport.containsKey(aeroports.get(volTemp.getIATASource())))
           volsSortantAeroport.put(aeroports.get(volTemp.getIATASource()), new ArrayList<Vol>());
-          volsSortantAeroport.get(aeroports.get(volTemp.getIATASource())).add(volTemp);
-        }
+        volsSortantAeroport.get(aeroports.get(volTemp.getIATASource())).add(volTemp);
 
       }
 
@@ -64,34 +60,47 @@ public class Graph {
   }
 
   public void calculerItineraireMinimisantNombreVol(String source, String destination) {
-     Aeroport sourceA = aeroports.get(source);
-     Aeroport destA = aeroports.get(destination);
+    Aeroport sourceA = aeroports.get(source);
+    Aeroport destA = aeroports.get(destination);
 
-    //etiquettesProvisoires.put(sourceA, (double) -1);
+    etiquettesDefinitives.put(sourceA, (double)-1); // car sourceA a besoin de 0 vols pour aller à sourceA
 
-    Set<Aeroport> aeroportsDejaPasses = new HashSet<Aeroport>();
-    ArrayDeque<HashMap<Aeroport, Integer>> listeAeroportValeur = new ArrayDeque<HashMap<Aeroport, Integer>>(); //Aeroport, nombre_de_vol
+    Set<Aeroport> aeroportsDejaPasses = new HashSet<>();
 
-    int cpt = 1;
-    // On commence par ici
-    for(Vol v : volsSortantAeroport.get(sourceA)){
-      HashMap<Aeroport, Integer> temp = new HashMap<Aeroport, Integer>();
-      temp.put(aeroports.get(v.getIATASource()), cpt);
-      listeAeroportValeur.add(temp);
+    double cpt = 1;
+    Aeroport aeroportPourBoucleFor = sourceA;
+    ArrayDeque<Aeroport> listeAeroport = new ArrayDeque<>();
+    while(!etiquettesDefinitives.containsKey(destA)){ // Risque de boucle infinie
+      // On commence par ici
 
-      aeroportsDejaPasses.add(aeroports.get(v.getIATASource()));
+      for(Vol v : volsSortantAeroport.get(aeroportPourBoucleFor)){
+
+        if(aeroportsDejaPasses.contains(aeroports.get(v.getIATADestination())))
+          continue;
+
+        Aeroport tempAeroport = aeroports.get(v.getIATADestination());
+        listeAeroport.add(tempAeroport);
+        etiquettesDefinitives.put(tempAeroport, (double) cpt);
+        aeroportsDejaPasses.add(tempAeroport);
+
+
+        if (tempAeroport.equals(destA)) { //On a trouvé le chemin le plus cours pour de sourceA vers destA
+          System.out.println("nombre de vols: " + etiquettesDefinitives.get(tempAeroport));
+          return; //inutile de continuer
+        }
+
+        if (volsSortantAeroport.get(tempAeroport) == null) {
+          System.out.println("nulleeeee");
+          etiquettesDefinitives.put(tempAeroport, (double) -1); // cet aeroport ne correspond à aucun aeroportSource
+        }
+
+      }
+
+      //cpt++;
+      aeroportPourBoucleFor = listeAeroport.poll();
+      cpt = etiquettesDefinitives.get(aeroportPourBoucleFor) + 1;
+
     }
-
-    HashMap<Aeroport, Integer> premierAeroport = listeAeroportValeur.poll();
-    if(premierAeroport == null) // Si queue est vide
-      return;
-    Aeroport a = premierAeroport.keySet().stream().findAny().orElse(null);
-    if(a == null) // normalement jamais le cas
-      return;
-    etiquettesDefinitives.put(a, (double)cpt);
-    //etiquettesDefinitives.put(sourceA, (double) -1);
-
-    cpt++;
   }
 
   public void calculerItineraireMiniminantDistance(String source, String destination) {
