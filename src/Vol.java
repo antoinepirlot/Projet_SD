@@ -1,13 +1,13 @@
 public class Vol {
 
   private String nomCompanie;
-  private String IATASource;
-  private String IATADestination;
+  private Aeroport source;
+  private Aeroport destination;
 
-  public Vol(String nomCompanie, String IATASource, String IATADestination) {
+  public Vol(String nomCompanie, Aeroport source, Aeroport destination) {
     this.nomCompanie = nomCompanie;
-    this.IATASource = IATASource;
-    this.IATADestination = IATADestination;
+    this.source = source;
+    this.destination = destination;
   }
 
   public String getNomCompanie() {
@@ -18,28 +18,31 @@ public class Vol {
     this.nomCompanie = nomCompanie;
   }
 
-  public String getIATASource() {
-    return IATASource;
+  public Aeroport getSource() {
+    return source;
   }
 
-  public void setIATASource(String IATASource) {
-    this.IATASource = IATASource;
+  public void setSource(Aeroport source) {
+    this.source = source;
   }
 
-  public String getIATADestination() {
-    return IATADestination;
+  public Aeroport getDestination() {
+    return destination;
   }
 
-  public void setIATADestination(String IATADestination) {
-    this.IATADestination = IATADestination;
+  public void setDestination(Aeroport destination) {
+    this.destination = destination;
   }
+
 
   @Override
   public String toString() {
-    return "Vol{" +
-        "nomCompanie='" + nomCompanie + '\'' +
-        ", IATASource='" + IATASource + '\'' +
-        ", IATADestination='" + IATADestination + '\'' +
-        '}';
+    return "Vol [" +
+        "source=" + source.getNom() + ", " +
+        "destination= " + destination.getNom() + ", " +
+        "airline=" + nomCompanie + ", " +
+        "distance=" + Util.distance(source.getLatitude(), source.getLongitude(),
+        destination.getLatitude(), destination.getLongitude()) +
+        "]\n";
   }
 }

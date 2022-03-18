@@ -20,7 +20,7 @@ public class Graph {
   private HashSet<Vol> vols = new HashSet<Vol>();
 
   private Map<Aeroport, List<Vol>> volsSortantAeroport = new HashMap<Aeroport, List<Vol>>();
-  private Map<Aeroport, List<Vol>> volsEntrantsAeroport = new HashMap<>();
+  private Map<Aeroport, Vol> volsEntrantsAeroport = new HashMap<>();
 
   private Map<Aeroport, Double> etiquettesDefinitives = new HashMap<Aeroport, Double>();
 
@@ -43,17 +43,20 @@ public class Graph {
 
       while ((volLine = volsBuffer.readLine()) != null) {
         Object[] vol = Arrays.stream(volLine.split(",")).toArray();
-        Vol volTemp = new Vol(vol[0].toString(), vol[1].toString(), vol[2].toString());
+        Aeroport source = aeroports.get(vol[1]);
+        Aeroport dest = aeroports.get(vol[2]);
+        Vol volTemp = new Vol(vol[0].toString(), source, dest);
         vols.add(volTemp);
 
         //Ajout du vol dans volsSortantAeroports
-        if(!volsSortantAeroport.containsKey(aeroports.get(volTemp.getIATASource())))
-          volsSortantAeroport.put(aeroports.get(volTemp.getIATASource()), new ArrayList<Vol>());
-        volsSortantAeroport.get(aeroports.get(volTemp.getIATASource())).add(volTemp);
+        if(!volsSortantAeroport.containsKey(volTemp.getSource()))
+          volsSortantAeroport.put(volTemp.getSource(), new ArrayList<Vol>());
+        volsSortantAeroport.get(volTemp.getSource()).add(volTemp);
 
-        if(!volsEntrantsAeroport.containsKey(aeroports.get(volTemp.getIATADestination())))
-          volsEntrantsAeroport.put(aeroports.get(volTemp.getIATADestination()), new ArrayList<>());
-        volsEntrantsAeroport.get(aeroports.get(volTemp.getIATADestination())).add(volTemp);
+//        if(!volsEntrantsAeroport.containsKey(volTemp.getDestination()))
+//          volsEntrantsAeroport.put(volTemp.getDestination(), volTemp);
+//        volsEntrantsAeroport.put(volTemp.getDestination(),volTemp);
+
 
       }
 
@@ -82,17 +85,20 @@ public class Graph {
 
       for(Vol volSortant : volsSortantAeroport.get(aeroportPourBoucleFor)){
 
-        if(aeroportsDejaPasses.contains(aeroports.get(volSortant.getIATADestination())))
+        if(aeroportsDejaPasses.contains(volSortant.getDestination()))
           continue;
 
-        Aeroport tempAeroport = aeroports.get(volSortant.getIATADestination());
+        Aeroport tempAeroport = volSortant.getDestination();
         listeAeroport.add(tempAeroport);
         etiquettesDefinitives.put(tempAeroport, (double) cpt);
+//        System.out.println("Etiquette définitive: " + volSortant.getSource().getIATA() + " -> " + volSortant.getDestination().getIATA() + ", Distance: " + cpt + "\n");
         aeroportsDejaPasses.add(tempAeroport);
 
-
+        volsEntrantsAeroport.put(volSortant.getDestination(),volSortant); // On ajoute volsEntrant
+        System.out.println("Vols entrants Aeroport: " + volSortant.getDestination().getIATA() + " <- " + volSortant.getSource().getIATA() + " de " + volSortant.getNomCompanie());
         if (tempAeroport.equals(destA)) { //On a trouvé le chemin le plus cours pour de sourceA vers destA
           System.out.println("nombre de vols: " + etiquettesDefinitives.get(tempAeroport));
+
           return; //inutile de continuer
         }
 
@@ -102,6 +108,7 @@ public class Graph {
         }
 
       }
+      System.out.println();
 
       //cpt++;
       aeroportPourBoucleFor = listeAeroport.poll();
