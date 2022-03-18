@@ -56,12 +56,9 @@ public class Graph {
         }
 
       }
-    } catch (FileNotFoundException e) {
-      e.printStackTrace();
     } catch (IOException e) {
       e.printStackTrace();
     }
-    //calculerItineraireMiniminantDistance("NOU", "CHC");
   }
 
   public void calculerItineraireMinimisantNombreVol(String source, String destination) {
@@ -114,21 +111,19 @@ public class Graph {
   public void calculerItineraireMiniminantDistance(String source, String destination) {
     Aeroport aeroportSource = aeroports.get(source);
     Aeroport aeroportDestination = aeroports.get(destination);
-    Map<Aeroport, Double> etiquettesProvisoires = new HashMap<Aeroport, Double>();
-    Map<Aeroport, Double> etiquettesDefinitives = new HashMap<Aeroport, Double>();
+    Map<Aeroport, Double> etiquettesProvisoires = new HashMap<>();
+    Map<Aeroport, Double> etiquettesDefinitives = new HashMap<>();
     Map<Aeroport, Vol> sourceAeroport = new HashMap<>();
 
     // Initialisation des etiquettes provisoires
-    List<Vol> listeVolsSource = volsSortantAeroport.get(aeroportSource);
-    for (Vol vol : listeVolsSource) {
+    for (Vol vol : volsSortantAeroport.get(aeroportSource)) {
       Aeroport aeroportDesti = aeroports.get(vol.getIATADestination());
-      etiquettesProvisoires.put(aeroportDesti,
-          Util.distance(aeroportSource.getLatitude(), aeroportSource.getLongitude(),
-              aeroportDesti.getLatitude(), aeroportDesti.getLongitude()));
-
+      etiquettesProvisoires.put(aeroportDesti, Util.distance(aeroportSource.getLatitude(),
+          aeroportSource.getLongitude(), aeroportDesti.getLatitude(), aeroportDesti.getLongitude()));
       sourceAeroport.put(aeroportDesti, vol);
     }
 
+    // Initialisation des étiquettes définitives
     while (true) {
       Aeroport aeroportDistanceMinimal = etiquettesProvisoires.keySet().stream()
           .filter(a -> !etiquettesDefinitives.containsKey(a)).
@@ -144,10 +139,8 @@ public class Graph {
       if (listVolsAeroportDestination == null) continue;
       for (Vol vol : listVolsAeroportDestination) {
         Aeroport aeroportVol = aeroports.get(vol.getIATADestination());
-        Double distance =
-            distanceSourceDestination + Util.distance(aeroportDistanceMinimal.getLatitude(),
-                aeroportDistanceMinimal.getLongitude(), aeroportVol.getLatitude(),
-                aeroportVol.getLongitude());
+        Double distance = distanceSourceDestination + Util.distance(aeroportDistanceMinimal.getLatitude(),
+            aeroportDistanceMinimal.getLongitude(), aeroportVol.getLatitude(), aeroportVol.getLongitude());
 
         Double ancienneDistance = etiquettesProvisoires.get(aeroportVol);
         if (ancienneDistance == null || ancienneDistance > distance) {
@@ -157,13 +150,25 @@ public class Graph {
       }
     }
 
-    List<Object> list = new ArrayList<>();
-    System.out.println(etiquettesDefinitives.get(aeroportDestination));
+    // Affichages des informations
+    List<String> listDisplay = new ArrayList<>();
     Vol vol = sourceAeroport.get(aeroportDestination);
-    while (!vol.getIATASource().equals(aeroportSource.getIATA())) {
-      System.out.println(vol);
+    while (true) {
+      Aeroport volAeroportSource = aeroports.get(vol.getIATASource());
+      Aeroport volAeroportDestination = aeroports.get(vol.getIATADestination());
+
+      listDisplay.add("Vol [source=" + volAeroportSource.getNom() + ", "
+          + "destination=" + volAeroportDestination.getNom() + ", "
+          + "airline=" + vol.getNomCompanie() + ", "
+          + "distance=" + Util.distance(volAeroportSource.getLatitude(), volAeroportSource.getLongitude(),
+          volAeroportDestination.getLatitude(), volAeroportDestination.getLongitude()) + "]");
+
+      if (vol.getIATASource().equals(aeroportSource.getIATA())) break;
       vol = sourceAeroport.get(aeroports.get(vol.getIATASource()));
     }
-    System.out.println(vol);
+    System.out.println("Distance : " + etiquettesDefinitives.get(aeroportDestination));
+    for (int i = listDisplay.size() - 1; i >= 0; i--) {
+      System.out.println(listDisplay.get(i));
+    }
   }
 }
