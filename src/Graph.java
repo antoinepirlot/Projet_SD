@@ -12,7 +12,10 @@ import java.util.Set;
 
 public class Graph {
 
-  private HashMap<String, Aeroport> aeroports = new HashMap<>(); //IATA, AEROPORT
+  private Map<String, Aeroport> aeroports = new HashMap<>(); //IATA, AEROPORT
+  private Map<Aeroport, Double> etiquettesProvisoire = new HashMap<>();
+  private Map<Aeroport, Double> etiquettesDefinitive = new HashMap<>();
+  private Map<Aeroport, Vol> sourceAeroport = new HashMap<>();
 
 
   private Map<String, List<String>> inital = new HashMap<>();
@@ -58,7 +61,18 @@ public class Graph {
   }
 
   public void calculerItineraireMinimisantNombreVol(String source, String destination) {
+    Aeroport aeroportSource = this.aeroports.get(source);
+    Aeroport aeroportDestination = this.aeroports.get(destination);
+    this.etiquettesProvisoire.clear();
+    this.etiquettesDefinitive.clear();
+    this.sourceAeroport.clear();
 
+    //Initalisation des etiquettes provisoires
+    Set<Vol> volsSortant = aeroportSource.getVolsSortant();
+    for(Vol vol : volsSortant) {
+      Aeroport aeroportVolDestination = this.aeroports.get(vol.getAeroportDestination());
+      this.etiquettesProvisoire.put(aeroportVolDestination, (double) 1);
+    }
   }
 
   public void calculerItineraireMiniminantDistance(String source, String destination) {
