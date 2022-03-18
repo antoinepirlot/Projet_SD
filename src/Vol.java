@@ -43,6 +43,6 @@ public class Vol {
         "airline=" + nomCompanie + ", " +
         "distance=" + Util.distance(source.getLatitude(), source.getLongitude(),
         destination.getLatitude(), destination.getLongitude()) +
-        "]\n";
+        "]";
   }
 }

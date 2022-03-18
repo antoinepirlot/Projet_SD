@@ -16,13 +16,12 @@ public class Graph {
 
 
 
-  private Map<String, Aeroport> aeroports = new HashMap<String, Aeroport>(); // IATA, Aeroport
-  private HashSet<Vol> vols = new HashSet<Vol>();
+  private Map<String, Aeroport> aeroports = new HashMap<>(); // IATA, Aeroport
+  private HashSet<Vol> vols = new HashSet<>();
 
-  private Map<Aeroport, List<Vol>> volsSortantAeroport = new HashMap<Aeroport, List<Vol>>();
-  private Map<Aeroport, Vol> volsEntrantsAeroport = new HashMap<>();
-
-  private Map<Aeroport, Double> etiquettesDefinitives = new HashMap<Aeroport, Double>();
+  private Map<Aeroport, List<Vol>> volsSortantAeroport = new HashMap<>();
+  private Map<Aeroport, Double> etiquettesDefinitives = new HashMap<>();
+  private Map<Aeroport, Vol> sourceAeroport = new HashMap<>();
 
   public Graph(File aeroportsFile, File volsFile) {
     try (
@@ -50,13 +49,8 @@ public class Graph {
 
         //Ajout du vol dans volsSortantAeroports
         if(!volsSortantAeroport.containsKey(volTemp.getSource()))
-          volsSortantAeroport.put(volTemp.getSource(), new ArrayList<Vol>());
+          volsSortantAeroport.put(volTemp.getSource(), new ArrayList<>());
         volsSortantAeroport.get(volTemp.getSource()).add(volTemp);
-
-//        if(!volsEntrantsAeroport.containsKey(volTemp.getDestination()))
-//          volsEntrantsAeroport.put(volTemp.getDestination(), volTemp);
-//        volsEntrantsAeroport.put(volTemp.getDestination(),volTemp);
-
 
       }
 
@@ -90,27 +84,41 @@ public class Graph {
 
         Aeroport tempAeroport = volSortant.getDestination();
         listeAeroport.add(tempAeroport);
-        etiquettesDefinitives.put(tempAeroport, (double) cpt);
-//        System.out.println("Etiquette définitive: " + volSortant.getSource().getIATA() + " -> " + volSortant.getDestination().getIATA() + ", Distance: " + cpt + "\n");
+        etiquettesDefinitives.put(tempAeroport, cpt);
+        sourceAeroport.put(tempAeroport, volSortant); // ICII TEST
+
         aeroportsDejaPasses.add(tempAeroport);
 
-        volsEntrantsAeroport.put(volSortant.getDestination(),volSortant); // On ajoute volsEntrant
-        System.out.println("Vols entrants Aeroport: " + volSortant.getDestination().getIATA() + " <- " + volSortant.getSource().getIATA() + " de " + volSortant.getNomCompanie());
         if (tempAeroport.equals(destA)) { //On a trouvé le chemin le plus cours pour de sourceA vers destA
-          System.out.println("nombre de vols: " + etiquettesDefinitives.get(tempAeroport));
 
+          Vol vol = sourceAeroport.get(destA);
+          ArrayDeque<Vol> navigation = new ArrayDeque<>();
+          double distance = 0;
+          Vol volTemp = null;
+          while(true){
+
+            distance += Util.distance(vol.getSource().getLatitude(), vol.getSource().getLongitude(),
+                vol.getDestination().getLatitude(),vol.getDestination().getLongitude());
+            navigation.add(vol);
+
+            if(vol.getSource().getIATA().equals(sourceA.getIATA())){
+              System.out.println("distance : "+ distance);
+              while ((volTemp = navigation.pollLast()) != null) {
+                System.out.println(volTemp);
+              }
+              break;
+            }
+            vol = sourceAeroport.get(vol.getSource());
+          }
           return; //inutile de continuer
         }
 
         if (volsSortantAeroport.get(tempAeroport) == null) {
-          System.out.println("nulleeeee");
           etiquettesDefinitives.put(tempAeroport, (double) -1); // cet aeroport ne correspond à aucun aeroportSource
         }
 
       }
-      System.out.println();
 
-      //cpt++;
       aeroportPourBoucleFor = listeAeroport.poll();
       cpt = etiquettesDefinitives.get(aeroportPourBoucleFor) + 1;
 
