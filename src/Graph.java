@@ -18,7 +18,9 @@ public class Graph {
 
   private Map<String, Aeroport> aeroports = new HashMap<String, Aeroport>(); // IATA, Aeroport
   private HashSet<Vol> vols = new HashSet<Vol>();
+
   private Map<Aeroport, List<Vol>> volsSortantAeroport = new HashMap<Aeroport, List<Vol>>();
+  private Map<Aeroport, List<Vol>> volsEntrantsAeroport = new HashMap<>();
 
   private Map<Aeroport, Double> etiquettesDefinitives = new HashMap<Aeroport, Double>();
 
@@ -49,6 +51,10 @@ public class Graph {
           volsSortantAeroport.put(aeroports.get(volTemp.getIATASource()), new ArrayList<Vol>());
         volsSortantAeroport.get(aeroports.get(volTemp.getIATASource())).add(volTemp);
 
+        if(!volsEntrantsAeroport.containsKey(aeroports.get(volTemp.getIATADestination())))
+          volsEntrantsAeroport.put(aeroports.get(volTemp.getIATADestination()), new ArrayList<>());
+        volsEntrantsAeroport.get(aeroports.get(volTemp.getIATADestination())).add(volTemp);
+
       }
 
 
@@ -63,9 +69,10 @@ public class Graph {
     Aeroport sourceA = aeroports.get(source);
     Aeroport destA = aeroports.get(destination);
 
-    etiquettesDefinitives.put(sourceA, (double)-1); // car sourceA a besoin de 0 vols pour aller à sourceA
+    etiquettesDefinitives.put(sourceA, (double)0); // car sourceA a besoin de 0 vols pour aller à sourceA
 
     Set<Aeroport> aeroportsDejaPasses = new HashSet<>();
+    aeroportsDejaPasses.add(sourceA);
 
     double cpt = 1;
     Aeroport aeroportPourBoucleFor = sourceA;
@@ -73,12 +80,12 @@ public class Graph {
     while(!etiquettesDefinitives.containsKey(destA)){ // Risque de boucle infinie
       // On commence par ici
 
-      for(Vol v : volsSortantAeroport.get(aeroportPourBoucleFor)){
+      for(Vol volSortant : volsSortantAeroport.get(aeroportPourBoucleFor)){
 
-        if(aeroportsDejaPasses.contains(aeroports.get(v.getIATADestination())))
+        if(aeroportsDejaPasses.contains(aeroports.get(volSortant.getIATADestination())))
           continue;
 
-        Aeroport tempAeroport = aeroports.get(v.getIATADestination());
+        Aeroport tempAeroport = aeroports.get(volSortant.getIATADestination());
         listeAeroport.add(tempAeroport);
         etiquettesDefinitives.put(tempAeroport, (double) cpt);
         aeroportsDejaPasses.add(tempAeroport);
