@@ -6,9 +6,9 @@ public class Main {
 			File aeroports = new File("aeroports.txt");
 			File vols = new File("vols.txt");
 			Graph g = new Graph(aeroports,vols);
-			g.calculerItineraireMinimisantNombreVol("BRU", "CHC");
+			g.calculerItineraireMinimisantNombreVol("BRU", "EWR");
 			System.out.println("-----------------");
-			g.calculerItineraireMiniminantDistance("BRU", "CHC");
+			g.calculerItineraireMiniminantDistance("BRU", "EWR");
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

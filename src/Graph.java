@@ -1,131 +1,132 @@
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
+import java.util.Deque;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 public class Graph {
-
-
-
-  private Map<String, Aeroport> aeroports = new HashMap<>(); // IATA, Aeroport
-  private HashSet<Vol> vols = new HashSet<>();
-
-  private Map<Aeroport, List<Vol>> volsSortantAeroport = new HashMap<>();
-  private Map<Aeroport, Double> etiquettesDefinitives = new HashMap<>();
-  private Map<Aeroport, Vol> sourceAeroport = new HashMap<>();
+  private final Map<String, Aeroport> aeroports = new HashMap<>();
+  private final Map<Aeroport, List<Vol>> volsSortantAeroport = new HashMap<>();
 
   public Graph(File aeroportsFile, File volsFile) {
     try (
         BufferedReader aeroportsBuffer = new BufferedReader(new FileReader(aeroportsFile));
         BufferedReader volsBuffer = new BufferedReader(new FileReader(volsFile))
     ) {
-
       String aeroportLine;
-      String volLine;
-
-      while((aeroportLine = aeroportsBuffer.readLine()) != null){
+      while ((aeroportLine = aeroportsBuffer.readLine()) != null) {
         Object[] aeroport = Arrays.stream(aeroportLine.split(",")).toArray();
         Aeroport aeroportTemp = new Aeroport(aeroport[0].toString(), aeroport[1].toString(),
             aeroport[2].toString(), aeroport[3].toString(),
             Double.parseDouble(aeroport[4].toString()), Double.parseDouble(aeroport[5].toString()));
-        aeroports.put(aeroportTemp.getIATA(), aeroportTemp);
+        this.aeroports.put(aeroportTemp.getIATA(), aeroportTemp);
       }
-
+      String volLine;
       while ((volLine = volsBuffer.readLine()) != null) {
         Object[] vol = Arrays.stream(volLine.split(",")).toArray();
-        Aeroport source = aeroports.get(vol[1]);
-        Aeroport dest = aeroports.get(vol[2]);
-        Vol volTemp = new Vol(vol[0].toString(), source, dest);
-        vols.add(volTemp);
-
-        //Ajout du vol dans volsSortantAeroports
-        if(!volsSortantAeroport.containsKey(volTemp.getSource()))
-          volsSortantAeroport.put(volTemp.getSource(), new ArrayList<>());
-        volsSortantAeroport.get(volTemp.getSource()).add(volTemp);
-
+        Vol volTemp = new Vol(vol[0].toString(), aeroports.get(vol[1].toString()), aeroports.get(vol[2].toString()));
+        if (this.volsSortantAeroport.containsKey(volTemp.getAeroportSource())) {
+          this.volsSortantAeroport.get(volTemp.getAeroportSource()).add(volTemp);
+        } else {
+          List<Vol> listVol = new ArrayList<>();
+          listVol.add(volTemp);
+          this.volsSortantAeroport.put(volTemp.getAeroportSource(), listVol);
+        }
       }
-
-
-    } catch (FileNotFoundException e) {
-      e.printStackTrace();
     } catch (IOException e) {
       e.printStackTrace();
     }
   }
 
   public void calculerItineraireMinimisantNombreVol(String source, String destination) {
-    Aeroport sourceA = aeroports.get(source);
-    Aeroport destA = aeroports.get(destination);
+    Aeroport aeroportSource = this.aeroports.get(source);
+    Aeroport aeroportDestination = this.aeroports.get(destination);
+    Map<Aeroport, Vol> sourceAeroports = new HashMap<>();
+    Deque<Aeroport> file = new ArrayDeque<>();
+    file.addLast(aeroportSource);
 
-    etiquettesDefinitives.put(sourceA, (double)0); // car sourceA a besoin de 0 vols pour aller à sourceA
-
-    Set<Aeroport> aeroportsDejaPasses = new HashSet<>();
-    aeroportsDejaPasses.add(sourceA);
-
-    double cpt = 1;
-    Aeroport aeroportPourBoucleFor = sourceA;
-    ArrayDeque<Aeroport> listeAeroport = new ArrayDeque<>();
-    while(!etiquettesDefinitives.containsKey(destA)){ // Risque de boucle infinie
-      // On commence par ici
-
-      for(Vol volSortant : volsSortantAeroport.get(aeroportPourBoucleFor)){
-
-        if(aeroportsDejaPasses.contains(volSortant.getDestination()))
-          continue;
-
-        Aeroport tempAeroport = volSortant.getDestination();
-        listeAeroport.add(tempAeroport);
-        etiquettesDefinitives.put(tempAeroport, cpt);
-        sourceAeroport.put(tempAeroport, volSortant); // ICII TEST
-
-        aeroportsDejaPasses.add(tempAeroport);
-
-        if (tempAeroport.equals(destA)) { //On a trouvé le chemin le plus cours pour de sourceA vers destA
-
-          Vol vol = sourceAeroport.get(destA);
-          ArrayDeque<Vol> navigation = new ArrayDeque<>();
-          double distance = 0;
-          Vol volTemp = null;
-          while(true){
-
-            distance += Util.distance(vol.getSource().getLatitude(), vol.getSource().getLongitude(),
-                vol.getDestination().getLatitude(),vol.getDestination().getLongitude());
-            navigation.add(vol);
-
-            if(vol.getSource().getIATA().equals(sourceA.getIATA())){
-              System.out.println("distance : "+ distance);
-              while ((volTemp = navigation.pollLast()) != null) {
-                System.out.println(volTemp);
-              }
-              break;
-            }
-            vol = sourceAeroport.get(vol.getSource());
-          }
-          return; //inutile de continuer
+    while (!file.isEmpty()) {
+      Aeroport aeroportActuel = file.removeFirst();
+      List<Vol> listVols = this.volsSortantAeroport.get(aeroportActuel);
+      if (listVols == null) throw new IllegalStateException("Aucun vol");
+      for (Vol vol : listVols) {
+        Aeroport aeroport = vol.getAeroportDestination();
+        if (!sourceAeroports.containsKey(aeroport)) {
+          file.addLast(aeroport);
+          sourceAeroports.put(aeroport, vol);
         }
-
-        if (volsSortantAeroport.get(tempAeroport) == null) {
-          etiquettesDefinitives.put(tempAeroport, (double) -1); // cet aeroport ne correspond à aucun aeroportSource
+        if (aeroport.equals(aeroportDestination)) {
+          affichageCheminVol(sourceAeroports, aeroportDestination, aeroportSource);
+          return;
         }
-
       }
-
-      aeroportPourBoucleFor = listeAeroport.poll();
-      cpt = etiquettesDefinitives.get(aeroportPourBoucleFor) + 1;
-
     }
   }
 
   public void calculerItineraireMiniminantDistance(String source, String destination) {
+    Aeroport aeroportSource = this.aeroports.get(source);
+    Aeroport aeroportDestination = this.aeroports.get(destination);
+    Map<Aeroport, Double> etiquettesProvisoires = new HashMap<>();
+    Map<Aeroport, Double> etiquettesDefinitives = new HashMap<>();
+    Map<Aeroport, Vol> sourceAeroports = new HashMap<>();
 
+    // Initialisation des etiquettes provisoires
+    List<Vol> listVols = this.volsSortantAeroport.get(aeroportSource);
+    if (listVols == null) throw new IllegalStateException("Aucun vol");
+    for (Vol vol : listVols) {
+      etiquettesProvisoires.put(vol.getAeroportDestination(), vol.getDistance());
+      sourceAeroports.put(vol.getAeroportDestination(), vol);
+    }
+
+    // Initialisation des étiquettes définitives
+    while (etiquettesDefinitives.size() != etiquettesProvisoires.size()) {
+      Aeroport aeroportDistanceMinimal = etiquettesProvisoires.keySet().stream()
+          .filter(a -> !etiquettesDefinitives.containsKey(a)).
+          min(Comparator.comparing(etiquettesProvisoires::get)).orElse(null);
+      if (aeroportDistanceMinimal == null) break;
+
+      double distanceSourceDestination = etiquettesProvisoires.get(aeroportDistanceMinimal);
+
+      etiquettesDefinitives.put(aeroportDistanceMinimal, distanceSourceDestination);
+      if (aeroportDistanceMinimal.equals(aeroportDestination)) break;
+
+      List<Vol> listVolsAeroportDestination = this.volsSortantAeroport.get(aeroportDistanceMinimal);
+      if (listVolsAeroportDestination == null) continue;
+      for (Vol vol : listVolsAeroportDestination) {
+        Aeroport aeroportVol = vol.getAeroportDestination();
+        Double distance = distanceSourceDestination + Util.distance(aeroportDistanceMinimal.getLatitude(),
+            aeroportDistanceMinimal.getLongitude(), aeroportVol.getLatitude(), aeroportVol.getLongitude());
+
+        Double ancienneDistance = etiquettesProvisoires.get(aeroportVol);
+        if (ancienneDistance == null || ancienneDistance > distance) {
+          etiquettesProvisoires.put(aeroportVol, distance);
+          sourceAeroports.put(aeroportVol, vol);
+        }
+      }
+    }
+    affichageCheminVol(sourceAeroports, aeroportDestination, aeroportSource);
+  }
+
+  private void affichageCheminVol(Map<Aeroport, Vol> sourcesAeroport, Aeroport aeroportDestination, Aeroport aeroportSource) {
+    double distance = 0;
+    List<String> listDisplay = new ArrayList<>();
+    Vol vol = sourcesAeroport.get(aeroportDestination);
+    while (true) {
+      listDisplay.add(vol.toString());
+      distance += vol.getDistance();
+      if (vol.getAeroportSource().equals(aeroportSource)) break;
+      vol = sourcesAeroport.get(vol.getAeroportSource());
+    }
+    System.out.println("Distance : " + distance);
+    for (int i = listDisplay.size() - 1; i >= 0; i--) {
+      System.out.println(listDisplay.get(i));
+    }
   }
 }

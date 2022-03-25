@@ -1,48 +1,33 @@
 public class Vol {
 
-  private String nomCompanie;
-  private Aeroport source;
-  private Aeroport destination;
+  private final String nomCompanie;
+  private final Aeroport aeroportSource;
+  private final Aeroport aeroportDestination;
 
-  public Vol(String nomCompanie, Aeroport source, Aeroport destination) {
+  public Vol(String nomCompanie, Aeroport aeroportSource, Aeroport aeroportDestination) {
     this.nomCompanie = nomCompanie;
-    this.source = source;
-    this.destination = destination;
+    this.aeroportSource = aeroportSource;
+    this.aeroportDestination = aeroportDestination;
   }
 
-  public String getNomCompanie() {
-    return nomCompanie;
+  public Aeroport getAeroportSource() {
+    return aeroportSource;
   }
 
-  public void setNomCompanie(String nomCompanie) {
-    this.nomCompanie = nomCompanie;
+  public Aeroport getAeroportDestination() {
+    return aeroportDestination;
   }
 
-  public Aeroport getSource() {
-    return source;
+  public double getDistance() {
+    return Util.distance(aeroportSource.getLatitude(), aeroportSource.getLongitude(),
+        aeroportDestination.getLatitude(), aeroportDestination.getLongitude());
   }
-
-  public void setSource(Aeroport source) {
-    this.source = source;
-  }
-
-  public Aeroport getDestination() {
-    return destination;
-  }
-
-  public void setDestination(Aeroport destination) {
-    this.destination = destination;
-  }
-
 
   @Override
   public String toString() {
-    return "Vol [" +
-        "source=" + source.getNom() + ", " +
-        "destination= " + destination.getNom() + ", " +
-        "airline=" + nomCompanie + ", " +
-        "distance=" + Util.distance(source.getLatitude(), source.getLongitude(),
-        destination.getLatitude(), destination.getLongitude()) +
-        "]";
+    return "Vol [source=" + this.aeroportSource.getNom()
+        + ", destination=" + this.aeroportDestination.getNom()
+        + ", airline=" + this.nomCompanie
+        + ", distance=" + getDistance() + "]";
   }
 }
