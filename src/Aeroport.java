@@ -1,12 +1,12 @@
 import java.util.Objects;
 
 public class Aeroport {
-  private String IATA;
-  private String nom;
-  private String ville;
-  private String pays;
-  private double longitude;
-  private double latitude;
+  private final String IATA;
+  private final String nom;
+  private final String ville;
+  private final String pays;
+  private final double longitude;
+  private final double latitude;
 
   public Aeroport(String IATA, String nom, String ville, String pays, double longitude,
       double latitude) {
@@ -22,48 +22,16 @@ public class Aeroport {
     return IATA;
   }
 
-  public void setIATA(String IATA) {
-    this.IATA = IATA;
-  }
-
   public String getNom() {
     return nom;
-  }
-
-  public void setNom(String nom) {
-    this.nom = nom;
-  }
-
-  public String getVille() {
-    return ville;
-  }
-
-  public void setVille(String ville) {
-    this.ville = ville;
-  }
-
-  public String getPays() {
-    return pays;
-  }
-
-  public void setPays(String pays) {
-    this.pays = pays;
   }
 
   public double getLongitude() {
     return longitude;
   }
 
-  public void setLongitude(double longitude) {
-    this.longitude = longitude;
-  }
-
   public double getLatitude() {
     return latitude;
-  }
-
-  public void setLatitude(double latitude) {
-    this.latitude = latitude;
   }
 
   @Override
@@ -81,17 +49,5 @@ public class Aeroport {
   @Override
   public int hashCode() {
     return Objects.hash(IATA);
-  }
-
-  @Override
-  public String toString() {
-    return "Aeroport{" +
-        "IATA='" + IATA + '\'' +
-        ", nom='" + nom + '\'' +
-        ", ville='" + ville + '\'' +
-        ", pays='" + pays + '\'' +
-        ", longitude=" + longitude +
-        ", latitude=" + latitude +
-        '}';
   }
 }
