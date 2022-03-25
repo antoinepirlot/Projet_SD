@@ -16,7 +16,6 @@ public class Graph {
   private Map<String, Aeroport> aeroports = new HashMap<String, Aeroport>(); // IATA, Aeroport
   private HashSet<Vol> vols = new HashSet<Vol>();
   private Map<Aeroport, List<Vol>> volsSortantAeroport = new HashMap<Aeroport, List<Vol>>();
-  Map<Aeroport, Vol> sourceAeroport = new HashMap<>();
 
   public Graph(File aeroportsFile, File volsFile) {
     try (
@@ -58,7 +57,7 @@ public class Graph {
   public void calculerItineraireMinimisantNombreVol(String source, String destination) {
     Aeroport aeroportSource = aeroports.get(source);
     Aeroport aeroportDestination = aeroports.get(destination);
-    this.sourceAeroport.clear();
+    Map<Aeroport, Vol> sourceAeroport = new HashMap<>();
     Deque<Aeroport> file = new ArrayDeque<>();
     file.addLast(aeroportSource);
 
@@ -66,12 +65,12 @@ public class Graph {
       Aeroport aeroportActuel = file.removeFirst();
       for (Vol vol : this.volsSortantAeroport.get(aeroportActuel)) {
         Aeroport aeroport = this.aeroports.get(vol.getIATADestination());
-        if (!this.sourceAeroport.containsKey(aeroport)) {
+        if (!sourceAeroport.containsKey(aeroport)) {
           file.addLast(aeroport);
-          this.sourceAeroport.put(aeroport, vol);
+          sourceAeroport.put(aeroport, vol);
         }
         if (aeroport.equals(aeroportDestination)) {
-          affichageCheminVol(this.sourceAeroport, aeroportDestination, aeroportSource);
+          affichageCheminVol(sourceAeroport, aeroportDestination, aeroportSource);
           return;
         }
       }
@@ -83,7 +82,7 @@ public class Graph {
     Aeroport aeroportDestination = aeroports.get(destination);
     Map<Aeroport, Double> etiquettesProvisoires = new HashMap<>();
     Map<Aeroport, Double> etiquettesDefinitives = new HashMap<>();
-    this.sourceAeroport.clear();
+    Map<Aeroport, Vol> sourceAeroport = new HashMap<>();
 
     // Initialisation des etiquettes provisoires
     for (Vol vol : volsSortantAeroport.get(aeroportSource)) {
