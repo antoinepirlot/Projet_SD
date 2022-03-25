@@ -16,6 +16,7 @@ public class Graph {
   private Map<String, Aeroport> aeroports = new HashMap<String, Aeroport>(); // IATA, Aeroport
   private HashSet<Vol> vols = new HashSet<Vol>();
   private Map<Aeroport, List<Vol>> volsSortantAeroport = new HashMap<Aeroport, List<Vol>>();
+  Map<Aeroport, Vol> sourceAeroport = new HashMap<>();
 
   public Graph(File aeroportsFile, File volsFile) {
     try (
@@ -57,20 +58,20 @@ public class Graph {
   public void calculerItineraireMinimisantNombreVol(String source, String destination) {
     Aeroport aeroportSource = aeroports.get(source);
     Aeroport aeroportDestination = aeroports.get(destination);
-    Map<Aeroport, Vol> sourceAeroport = new HashMap<>();
+    this.sourceAeroport.clear();
     Deque<Aeroport> file = new ArrayDeque<>();
     file.addLast(aeroportSource);
 
     while (!file.isEmpty()) {
       Aeroport aeroportActuel = file.removeFirst();
-      for (Vol vol : volsSortantAeroport.get(aeroportActuel)) {
-        Aeroport aeroport = aeroports.get(vol.getIATADestination());
-        if (!sourceAeroport.containsKey(aeroport)) {
+      for (Vol vol : this.volsSortantAeroport.get(aeroportActuel)) {
+        Aeroport aeroport = this.aeroports.get(vol.getIATADestination());
+        if (!this.sourceAeroport.containsKey(aeroport)) {
           file.addLast(aeroport);
-          sourceAeroport.put(aeroport, vol);
+          this.sourceAeroport.put(aeroport, vol);
         }
         if (aeroport.equals(aeroportDestination)) {
-          affichageCheminVol(sourceAeroport, aeroportDestination, aeroportSource);
+          affichageCheminVol(this.sourceAeroport, aeroportDestination, aeroportSource);
           return;
         }
       }
@@ -82,7 +83,7 @@ public class Graph {
     Aeroport aeroportDestination = aeroports.get(destination);
     Map<Aeroport, Double> etiquettesProvisoires = new HashMap<>();
     Map<Aeroport, Double> etiquettesDefinitives = new HashMap<>();
-    Map<Aeroport, Vol> sourceAeroport = new HashMap<>();
+    this.sourceAeroport.clear();
 
     // Initialisation des etiquettes provisoires
     for (Vol vol : volsSortantAeroport.get(aeroportSource)) {
