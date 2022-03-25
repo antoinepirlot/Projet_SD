@@ -77,7 +77,6 @@ public class Graph {
     Map<Aeroport, Double> etiquettesDefinitives = new HashMap<>();
     Map<Aeroport, Vol> sourceAeroports = new HashMap<>();
 
-    // Initialisation des etiquettes provisoires
     List<Vol> listVols = this.volsSortantAeroport.get(aeroportSource);
     if (listVols == null) throw new IllegalStateException("Aucun vol");
     for (Vol vol : listVols) {
@@ -85,7 +84,6 @@ public class Graph {
       sourceAeroports.put(vol.getAeroportDestination(), vol);
     }
 
-    // Initialisation des étiquettes définitives
     while (etiquettesDefinitives.size() != etiquettesProvisoires.size()) {
       Aeroport aeroportDistanceMinimal = etiquettesProvisoires.keySet().stream()
           .filter(a -> !etiquettesDefinitives.containsKey(a)).
